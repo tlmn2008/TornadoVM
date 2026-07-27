@@ -39,7 +39,10 @@ else()
 	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -O2")
 	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fpermissive")
 	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fPIC")
-	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -export-dynamic")
+	# CoreX (ivcore11) uses clang++, which rejects the gcc spelling '-export-dynamic'
+	# (a linker flag that add_definitions() forwards onto every compile line).
+	# '-rdynamic' is the clang-accepted equivalent (exports dynamic symbols).
+	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -rdynamic")
 	add_definitions(${CMAKE_CXX_FLAGS})
 endif()
 
@@ -94,7 +97,15 @@ if(CUDAToolkit_FOUND)
             find_path(NVML_INCLUDE_DIR NAMES nvml.h HINTS ${CUDA_INCLUDE_DIRS} /usr/local/cuda/targets/x86_64-linux/include /usr/local/cuda/targets/sbsa-linux/include)
             find_library(NVML_LIBRARY NAMES nvidia-ml PATHS ${CUDA_TOOLKIT_ROOT_DIR}/lib/x64 /usr/local/cuda/targets/x86_64-linux/lib/stubs/ /usr/local/cuda/targets/sbsa-linux/lib/stubs/)
         endif()
-        target_link_libraries(tornado-ptx ${JNI_LIB_DIRS} "-L/usr/local/cuda/lib64/stubs -lcuda -lnvidia-ml")
+        # CoreX (ivcore11) adaptation: the real libcuda.so lives in $COREX_PATH/lib64
+        # (there is no /usr/local/cuda/lib64/stubs), and CoreX ships no libnvidia-ml,
+        # so NVML is dropped (NVML_IS_SUPPORTED stays undefined). Falls back to the
+        # original NVIDIA path when COREX_PATH is not set.
+        if(DEFINED ENV{COREX_PATH})
+            target_link_libraries(tornado-ptx ${JNI_LIB_DIRS} "-L$ENV{COREX_PATH}/lib64 -lcuda")
+        else()
+            target_link_libraries(tornado-ptx ${JNI_LIB_DIRS} "-L/usr/local/cuda/lib64/stubs -lcuda -lnvidia-ml")
+        endif()
     endif()
     if (NVML_INCLUDE_DIR AND NVML_LIBRARY)
         add_definitions(-DNVML_IS_SUPPORTED)

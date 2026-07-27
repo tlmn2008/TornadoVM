@@ -1,0 +1,46 @@
+{
+  "repo_name": "TornadoVM",
+  "repo_url": "https://github.com/beehive-lab/TornadoVM.git",
+  "source_commit": "06616ddd4a543b07f785982bfcf4ffea7f6bc9c6",
+  "source_commit_date": "2026-07-24T18:50:50+03:00",
+  "source_branch": "master",
+  "sdk_version": "/usr/local/corex (Iluvatar CoreX ivcore11, BI-V150)",
+  "compile_status": "success",
+  "test_status": "failed",
+  "overall_status": "blocked",
+  "tests_run": 241,
+  "tests_passed": 26,
+  "tests_failed": 146,
+  "tests_skipped": 69,
+  "summary": "TornadoVM 是 JDK 21+ 异构 GPU 框架，CUDA 后端链路为 Java 字节码 → Graal IR → NVIDIA PTX 文本 → cuModuleLoadData(驱动 JIT) → cuLaunchKernel。本次在 ivcore11(BI-V150) 上：编译面已用 clang/clang++ + CoreX libcuda 打通(BUILD SUCCESS，含 libtornado-ptx.so)；但运行期 PTX 后端把 Graal 产出的 NVIDIA PTX 文本交给驱动时被整体拒绝，cuModuleLoadData 一律返回 CUDA_ERROR_INVALID_IMAGE(200)。全量 tornado-unittests(127 类)已诚实执行：39 类跑出结果、88 类因驱动残留在设备初始化挂起(计为 blocked)；241 个运行时用例中 146 失败、69 被框架标 Unsupported、26 通过(均为不下发 device kernel 的 host/API/负例)。OpenCL 备选后端因系统无 Iluvatar OpenCL ICD 亦不可用。CUDA/PTX 路径在 ivcore11 上判定为 terminal。",
+  "key_adaptations": [
+    "CMakeLists.txt(ptx-jni)：链接 $COREX_PATH/lib64 -lcuda，去掉 CoreX 不存在的 -lnvidia-ml",
+    "CMakeLists.txt：-export-dynamic 改为 clang++ 兼容的 -rdynamic",
+    "全程用 clang/clang++ 构建，未使用 nvcc；零改动 /usr/local/corex",
+    "用户态安装 Amazon Corretto 21；Maven 单线程构建规避沙箱 lock 争用",
+    "测试统一 CUDA_VISIBLE_DEVICES=0（≤2 GPU），每类独立 JVM + 40s 超时 + 回收残留 JVM",
+    "先用裸 CUDA Driver API 探针跨 6 个 PTX 版本 × 5 个 sm target 复现 PTX 拒绝，再做端到端"
+  ],
+  "terminal_blockers": [
+    "PTX 文本被 ivcore11 驱动整体拒绝：cuModuleLoadData/cuModuleLoadDataEx 对所有 NVIDIA PTX 文本返回 CUDA_ERROR_INVALID_IMAGE(200)。裸探针 30 组全 rc=200；对照 nvrtc 本地 ELF 镜像 rc=0 成功。ivcore11 只消费 clang/IXRTC 本地镜像，不消费 NV PTX 文本，需重写 codegen 才能跑通 → terminal。",
+    "OpenCL 备选后端不可用：无 Iluvatar OpenCL ICD(/etc/OpenCL/vendors 不存在)，clGetPlatformIDs 返回 -1001(0 平台)，全盘无 *.icd 与 libOpenCL 实现库 → terminal。"
+  ],
+  "workaround_blockers": [
+    "驱动残留导致设备初始化挂起(次生现象)：反复 INVALID_IMAGE 后驱动进入残留态，后续类在双设备 init 挂起。用每类独立 JVM + 40s 超时 + 回收残留 JVM + 单 GPU 隔离并如实计数(挂起类计为 blocked)，杀 JVM+冷却 3-5 分钟可恢复。"
+  ],
+  "github": {
+    "fork_url": "https://github.com/tlmn2008/TornadoVM",
+    "branch": "corex-port",
+    "default_branch": "corex-port",
+    "default_branch_status": "success",
+    "compare_url": "https://github.com/tlmn2008/TornadoVM/compare/master...corex-port",
+    "push_commit": "da233cc5522e39918d5c9cac61329d7f9f0e6789",
+    "push_status": "success",
+    "pushed_at": "2026-07-27T07:03:32Z"
+  },
+  "local_logs": {
+    "compile_log": "corex_port/build/build_ptx.log",
+    "test_log": "corex_port/test/test.log"
+  },
+  "migration_finished_at": "2026-07-27T07:03:32Z"
+}

@@ -1,0 +1,33 @@
+{
+  "repo": "TornadoVM",
+  "target_platform": "Iluvatar CoreX ivcore11 (BI-V150)",
+  "blockers": [
+    {
+      "id": "ptx-text-rejected-by-driver",
+      "component": "tornado-drivers-ptx (CUDA/PTX backend)",
+      "classification": "terminal",
+      "symptom": "TornadoVM 的 PTX 后端由 Graal 在 JVM 内把 Java 字节码即时编译成 NVIDIA PTX 文本，再经 JNI 调用 cuModuleLoadData/cuModuleLoadDataEx 交给驱动。CoreX ivcore11 驱动对所有 NVIDIA PTX 文本返回 CUDA_ERROR_INVALID_IMAGE (200)。",
+      "evidence": "1) 独立最小探针 corex_port/build/ptx_probe.cpp 对 30 组 (.version 5.0/6.0/6.5/7.0/7.5/8.0 × .target sm_35/50/60/70/75) 逐一 cuModuleLoadData，全部 rc=200；2) 对照：nvrtc 不带 arch 编译产出的是本地 ELF 镜像(魔数 'ELFB')，cuModuleLoadData 成功 rc=0——证明 ivcore11 只消费 clang/IXRTC 产出的本地镜像，不消费 NV PTX 文本；3) 端到端：tornado-test 运行 TestHello 等，每个 kernel 均 'cuModuleLoadDataEx -> Returned: 200' / 'PTX JIT compilation failed!'。见 corex_port/build/ptx_probe_run.log 与 corex_port/test/test.log。",
+      "why_terminal": "TornadoVM 的 CUDA 路径本质是 Graal→NV PTX→驱动 JIT(cuModuleLoadData)。ivcore11 后端不接受 NV PTX 文本(与 iluvatar-cuda-base 索引 'cuModuleLoad(NV PTX) 拒绝' 条目、以及 ILGPU 先例一致)。要在 ivcore11 上跑通需要为 TornadoVM 新增一个产出 ivcore11 本地镜像的全新后端(相当于重写 codegen)，无法在不改 /usr/local/corex 且不引入新后端的前提下本地解决。",
+      "attempt_made": "用裸探针跨 6 个 PTX ISA 版本 × 5 个 sm target 复现，全部 200；并验证 nvrtc 本地 ELF 路径可加载作为反证。无源码级规避可将 Graal 产出的 NV PTX 变为 ivcore11 可加载镜像。"
+    },
+    {
+      "id": "opencl-backend-no-icd",
+      "component": "tornado-drivers-opencl (备选后端)",
+      "classification": "terminal",
+      "symptom": "作为 PTX 终局阻塞的备选，尝试 OpenCL 后端。系统仅有通用 ocl-icd loader(/usr/lib/x86_64-linux-gnu/libOpenCL.so.1)，没有注册任何 Iluvatar OpenCL ICD(/etc/OpenCL/vendors 不存在)。",
+      "evidence": "corex_port/build/ocl_probe.cpp: clGetPlatformIDs 返回 -1001 (CL_PLATFORM_NOT_FOUND_KHR)，平台数=0；全盘搜索无任何 *.icd 供应商文件，corex 下无 libOpenCL 实现库。见 corex_port/build/ocl_probe_run.log。",
+      "why_terminal": "该 CoreX SDK 只暴露 CUDA 兼容(clang/ivcore11)栈，未提供 OpenCL 运行时/ICD。没有平台即无法用 OpenCL 后端跑任何 kernel，且属平台缺失(不在仓库可修范围、不能碰 /usr/local/corex)。",
+      "attempt_made": "编写并运行 OpenCL 探针确认 0 平台；搜索整个文件系统寻找 Iluvatar ICD 供应商文件与实现库，均无。"
+    },
+    {
+      "id": "driver-residue-init-hang",
+      "component": "CoreX 驱动 / 运行时(次生现象)",
+      "classification": "workaround-able",
+      "symptom": "反复的 cuModuleLoadData 失败(INVALID_IMAGE)在部分测试后使驱动进入残留状态：后续 TornadoVM JVM 在设备初始化(双设备建 context)时挂起(0 输出)，ixsmi 偶发报 'No supported GPUs'，裸 cuInit 偶发返回 100(no device)。",
+      "evidence": "standalone TestIntegers 在并发/残留下 init 挂起 90s 超时(0 输出)；ixsmi rc=255；见 corex_port/test/test.log 中标记为 HUNG 的类。",
+      "why_workaroundable": "杀掉所有残留 JVM 并等待 ~3-5 分钟冷却后驱动恢复(ixsmi 正常、cuInit rc=0)。与 iluvatar-cuda-base 'GPU hang 后 driver 残留 / cuda_init 卡死 3-5 分钟' 条目一致。",
+      "attempt_made": "采用每类独立 JVM + 每类超时(40s) + 结束后回收残留 JVM + 限制单 GPU(CUDA_VISIBLE_DEVICES=0) 的跑法以隔离并计数;挂起的类按 hung/blocked 计入并说明,不并发以减少 wedging。这是次生现象,根因仍是上面的 PTX 终局阻塞。"
+    }
+  ]
+}

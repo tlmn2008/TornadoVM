@@ -1,0 +1,1 @@
+[filter] native JNI driver-log lines total=3941533 (kept first 300)

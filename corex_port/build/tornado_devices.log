@@ -1,0 +1,36 @@
+[1;33m[WARNING][0m NVIDIA driver is not installed
+
+The PTX backend requires NVIDIA CUDA Toolkit and drivers.
+
+Visit: [0;32mhttps://developer.nvidia.com/cuda-downloads[0m
+
+Or install via package manager:
+  [0;32mwget https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2204/x86_64/cuda-keyring_1.1-1_all.deb[0m
+  [0;32msudo dpkg -i cuda-keyring_1.1-1_all.deb[0m
+  [0;32msudo apt update[0m
+  [0;32msudo apt install -y cuda[0m
+
+WARNING: Using incubator modules: jdk.incubator.vector
+
+Number of Tornado drivers: 1
+Driver: [32mPTX[0m
+  Total number of PTX devices  : 2
+  Tornado device=0:0  (DEFAULT)
+	[32mPTX[0m -- PTX -- Iluvatar BI-V150
+		Global Memory Size: 32.0 GB
+		Local Memory Size: 128.0 KB
+		Workgroup Dimensions: 3
+		Total Number of Block Threads: [2147483647, 65535, 65535]
+		Max WorkGroup Configuration: [4096, 4096, 256]
+		Device OpenCL C version: N/A
+
+  Tornado device=0:1
+	[32mPTX[0m -- PTX -- Iluvatar BI-V150
+		Global Memory Size: 32.0 GB
+		Local Memory Size: 128.0 KB
+		Workgroup Dimensions: 3
+		Total Number of Block Threads: [2147483647, 65535, 65535]
+		Max WorkGroup Configuration: [4096, 4096, 256]
+		Device OpenCL C version: N/A
+
+

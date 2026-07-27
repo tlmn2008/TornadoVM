@@ -1,0 +1,25 @@
+{
+  "compile_status": "success",
+  "toolchain": {
+    "jdk": "Amazon Corretto 21 (user-space)",
+    "build_system": "Maven (bin/compile wrapper), single-threaded",
+    "c_compiler": "clang (CoreX)",
+    "cxx_compiler": "clang++ (CoreX)",
+    "nvcc_used": false,
+    "backend": "ptx (CUDA)",
+    "cuda_lib": "/usr/local/corex/lib64/libcuda.so (COREX_PATH)"
+  },
+  "artifacts": [
+    "tornado-drivers/ptx-jni/target/linux-amd64-release/cmake/libtornado-ptx.so",
+    "dist/tornadovm-5.2.1-jdk21-dev-ptx-linux-amd64/.../lib/libtornado-ptx.so",
+    "tornado-drivers-ptx-jni-5.2.1-jdk21-dev.jar",
+    "tornado-drivers-ptx-5.2.1-jdk21-dev.jar"
+  ],
+  "adaptations": [
+    "CMakeLists.txt: 链接 $COREX_PATH/lib64 -lcuda，去掉 CoreX 无的 -lnvidia-ml",
+    "CMakeLists.txt: -export-dynamic 改为 clang++ 兼容的 -rdynamic",
+    "Maven 单线程构建规避沙箱 lock 争用"
+  ],
+  "result": "BUILD SUCCESS —— TornadoVM PTX 后端与 tornado-drivers-ptx-jni 本地库(libtornado-ptx.so)均用 clang/clang++ + CoreX libcuda 成功编译。编译成败不计入 tests_*。",
+  "log": "corex_port/build/build_ptx.log"
+}

@@ -1,0 +1,25 @@
+{
+  "tests_run": 241,
+  "tests_passed": 26,
+  "tests_failed": 146,
+  "tests_skipped": 69,
+  "metrics": [
+    {
+      "name": "tornado-unittests pass_rate (PTX backend / ivcore11)",
+      "metric_type": "pass_rate",
+      "value": 10.79,
+      "unit": "percent",
+      "config": "BACKEND=ptx, CUDA_VISIBLE_DEVICES=0, 每类独立 JVM + 40s 超时",
+      "device": "Iluvatar CoreX ivcore11 (BI-V150)",
+      "source": "corex_port/test/test.log SUITE AGGREGATE"
+    }
+  ],
+  "skipped_reasons": [
+    {
+      "reason": "PTX CONFIGURATION UNSUPPORTED (tornado-test 框架把该用例在当前 PTX 后端/设备上标为 Unsupported，多为 cuBLAS/cuSPARSE/FP8 等配置)",
+      "count": 69,
+      "legitimate": true,
+      "note": "由 tornado-test 运行器自身按后端/设备能力标注为 Unsupported 的运行时用例（平台能力约束），非因规避 CoreX 问题而人为跳过。逐用例见 test.log。"
+    }
+  ]
+}

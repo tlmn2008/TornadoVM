@@ -1,0 +1,43 @@
+[cuInit] rc=0 no error
+[cuDeviceGetCount] 2 device(s)
+[device0] Iluvatar BI-V150  cc=7.1
+[cuCtxCreate] rc=0 no error
+[cuModuleLoadData] .version 6.5 .target sm_50  -> rc=200 device kernel image is invalid
+[cuModuleLoadData] .version 6.5 .target sm_60  -> rc=200 device kernel image is invalid
+[cuModuleLoadData] .version 6.5 .target sm_70  -> rc=200 device kernel image is invalid
+[cuModuleLoadData] .version 6.5 .target sm_75  -> rc=200 device kernel image is invalid
+[cuModuleLoadData] .version 6.5 .target sm_35  -> rc=200 device kernel image is invalid
+[cuModuleLoadData] .version 6.0 .target sm_50  -> rc=200 device kernel image is invalid
+[cuModuleLoadData] .version 6.0 .target sm_60  -> rc=200 device kernel image is invalid
+[cuModuleLoadData] .version 6.0 .target sm_70  -> rc=200 device kernel image is invalid
+[cuModuleLoadData] .version 6.0 .target sm_75  -> rc=200 device kernel image is invalid
+[cuModuleLoadData] .version 6.0 .target sm_35  -> rc=200 device kernel image is invalid
+[cuModuleLoadData] .version 5.0 .target sm_50  -> rc=200 device kernel image is invalid
+[cuModuleLoadData] .version 5.0 .target sm_60  -> rc=200 device kernel image is invalid
+[cuModuleLoadData] .version 5.0 .target sm_70  -> rc=200 device kernel image is invalid
+[cuModuleLoadData] .version 5.0 .target sm_75  -> rc=200 device kernel image is invalid
+[cuModuleLoadData] .version 5.0 .target sm_35  -> rc=200 device kernel image is invalid
+[cuModuleLoadData] .version 7.0 .target sm_50  -> rc=200 device kernel image is invalid
+[cuModuleLoadData] .version 7.0 .target sm_60  -> rc=200 device kernel image is invalid
+[cuModuleLoadData] .version 7.0 .target sm_70  -> rc=200 device kernel image is invalid
+[cuModuleLoadData] .version 7.0 .target sm_75  -> rc=200 device kernel image is invalid
+[cuModuleLoadData] .version 7.0 .target sm_35  -> rc=200 device kernel image is invalid
+[cuModuleLoadData] .version 7.5 .target sm_50  -> rc=200 device kernel image is invalid
+[cuModuleLoadData] .version 7.5 .target sm_60  -> rc=200 device kernel image is invalid
+[cuModuleLoadData] .version 7.5 .target sm_70  -> rc=200 device kernel image is invalid
+[cuModuleLoadData] .version 7.5 .target sm_75  -> rc=200 device kernel image is invalid
+[cuModuleLoadData] .version 7.5 .target sm_35  -> rc=200 device kernel image is invalid
+[cuModuleLoadData] .version 8.0 .target sm_50  -> rc=200 device kernel image is invalid
+[cuModuleLoadData] .version 8.0 .target sm_60  -> rc=200 device kernel image is invalid
+[cuModuleLoadData] .version 8.0 .target sm_70  -> rc=200 device kernel image is invalid
+[cuModuleLoadData] .version 8.0 .target sm_75  -> rc=200 device kernel image is invalid
+[cuModuleLoadData] .version 8.0 .target sm_35  -> rc=200 device kernel image is invalid
+[PTX-load summary] accepted=0 rejected=30
+[nvrtcCreateProgram] rc=0 NVRTC_SUCCESS
+[IXRTC] ixrtcCompileProgram failed! Please check the compiler log: /tmp/ixrtc/14d00800c01213bac772d1e823c8ee8e495aeb2b/tmp.log
+[nvrtcCompileProgram compute_70] rc=6 NVRTC_ERROR_COMPILATION
+[nvrtcCompileProgram no-arch] rc=0 NVRTC_SUCCESS
+[nvrtc PTX head]
+ELFB
+[cuModuleLoadData(nvrtc-PTX)] rc=0 no error
+[cuModuleGetFunction] rc=0 no error

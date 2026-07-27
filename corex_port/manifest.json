@@ -34,7 +34,7 @@
     "default_branch": "corex-port",
     "default_branch_status": "success",
     "compare_url": "https://github.com/tlmn2008/TornadoVM/compare/master...corex-port",
-    "push_commit": "da233cc5522e39918d5c9cac61329d7f9f0e6789",
+    "push_commit": "caec2c561180771afebbeb495678c5d8861a2f0b",
     "push_status": "success",
     "pushed_at": "2026-07-27T07:03:32Z"
   },

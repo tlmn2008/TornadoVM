@@ -29,9 +29,8 @@
     "驱动残留导致设备初始化挂起(次生现象)：反复 INVALID_IMAGE 后驱动进入残留态，后续类在双设备 init 挂起。用每类独立 JVM + 40s 超时 + 回收残留 JVM + 单 GPU 隔离并如实计数(挂起类计为 blocked)，杀 JVM+冷却 3-5 分钟可恢复。"
   ],
   "upstream_assessment": {
-    "upstreamable": "partial",
-    "nvidia_compatible": "guarded",
-    "notes": "ptx-jni 的链接库路径以 if(DEFINED ENV{COREX_PATH}) 守卫并保留原 NVIDIA 分支;-export-dynamic→-rdynamic 为 clang/gcc 通用可移植写法。CUDA/PTX 后端在 ivcore11 因驱动整体拒绝 NV PTX 文本(terminal)无法加载 kernel，OpenCL 备选无 ICD 亦不可用;跑通需为 TornadoVM 重写 codegen 产出 ivcore11 本地镜像。本仓无 fork remote，未推送。CLA 需签。"
+    "upstream_status": "blocked",
+    "notes": "ptx-jni 链接库路径以 if(DEFINED ENV{COREX_PATH}) 守卫并保留原 NVIDIA 分支,不回归。但 CUDA/PTX 后端在 ivcore11 因驱动整体拒收 NV PTX 文本(200)无法加载 kernel,OpenCL 备选无 ICD 亦不可用——跑通需为 TornadoVM 重写 codegen 产出 ivcore11 本地镜像(terminal),CoreX 适配无可用后端可上游。-export-dynamic→-rdynamic 为 clang/gcc 通用可移植写法(见 bugfixes)可单独提 PR。本仓无 fork remote。CLA 需签。"
   },
   "bugfixes": [
     {

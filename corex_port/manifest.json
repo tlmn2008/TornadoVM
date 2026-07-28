@@ -28,6 +28,19 @@
   "workaround_blockers": [
     "驱动残留导致设备初始化挂起(次生现象)：反复 INVALID_IMAGE 后驱动进入残留态，后续类在双设备 init 挂起。用每类独立 JVM + 40s 超时 + 回收残留 JVM + 单 GPU 隔离并如实计数(挂起类计为 blocked)，杀 JVM+冷却 3-5 分钟可恢复。"
   ],
+  "upstream_assessment": {
+    "upstreamable": "partial",
+    "nvidia_compatible": "guarded",
+    "notes": "ptx-jni 的链接库路径以 if(DEFINED ENV{COREX_PATH}) 守卫并保留原 NVIDIA 分支;-export-dynamic→-rdynamic 为 clang/gcc 通用可移植写法。CUDA/PTX 后端在 ivcore11 因驱动整体拒绝 NV PTX 文本(terminal)无法加载 kernel，OpenCL 备选无 ICD 亦不可用;跑通需为 TornadoVM 重写 codegen 产出 ivcore11 本地镜像。本仓无 fork remote，未推送。CLA 需签。"
+  },
+  "bugfixes": [
+    {
+      "file": "tornado-drivers/ptx-jni/src/main/cpp/CMakeLists.txt",
+      "description": "编译标志用 gcc 专有拼写 -export-dynamic，被 clang++ 驱动拒绝;改为 clang/gcc 通用的 -rdynamic(等价导出动态符号)。属可移植性缺陷。",
+      "upstream_worthy": true,
+      "status": "fixed_local"
+    }
+  ],
   "github": {
     "fork_url": "https://github.com/tlmn2008/TornadoVM",
     "branch": "corex-port",

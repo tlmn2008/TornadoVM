@@ -4,7 +4,7 @@
   "source_commit": "06616ddd4a543b07f785982bfcf4ffea7f6bc9c6",
   "source_commit_date": "2026-07-24T18:50:50+03:00",
   "source_branch": "master",
-  "sdk_version": "/usr/local/corex (Iluvatar CoreX ivcore11, BI-V150)",
+  "sdk_version": "CoreX 4.5.0.20260630",
   "compile_status": "success",
   "test_status": "failed",
   "overall_status": "blocked",

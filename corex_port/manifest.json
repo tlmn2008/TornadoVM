@@ -21,13 +21,6 @@
     "测试统一 CUDA_VISIBLE_DEVICES=0（≤2 GPU），每类独立 JVM + 40s 超时 + 回收残留 JVM",
     "先用裸 CUDA Driver API 探针跨 6 个 PTX 版本 × 5 个 sm target 复现 PTX 拒绝，再做端到端"
   ],
-  "terminal_blockers": [
-    "PTX 文本被 ivcore11 驱动整体拒绝：cuModuleLoadData/cuModuleLoadDataEx 对所有 NVIDIA PTX 文本返回 CUDA_ERROR_INVALID_IMAGE(200)。裸探针 30 组全 rc=200；对照 nvrtc 本地 ELF 镜像 rc=0 成功。ivcore11 只消费 clang/IXRTC 本地镜像，不消费 NV PTX 文本，需重写 codegen 才能跑通 → terminal。",
-    "OpenCL 备选后端不可用：无 Iluvatar OpenCL ICD(/etc/OpenCL/vendors 不存在)，clGetPlatformIDs 返回 -1001(0 平台)，全盘无 *.icd 与 libOpenCL 实现库 → terminal。"
-  ],
-  "workaround_blockers": [
-    "驱动残留导致设备初始化挂起(次生现象)：反复 INVALID_IMAGE 后驱动进入残留态，后续类在双设备 init 挂起。用每类独立 JVM + 40s 超时 + 回收残留 JVM + 单 GPU 隔离并如实计数(挂起类计为 blocked)，杀 JVM+冷却 3-5 分钟可恢复。"
-  ],
   "upstream_assessment": {
     "upstream_status": "blocked",
     "notes": "ptx-jni 链接库路径以 if(DEFINED ENV{COREX_PATH}) 守卫并保留原 NVIDIA 分支,不回归。但 CUDA/PTX 后端在 ivcore11 因驱动整体拒收 NV PTX 文本(200)无法加载 kernel,OpenCL 备选无 ICD 亦不可用——跑通需为 TornadoVM 重写 codegen 产出 ivcore11 本地镜像(terminal),CoreX 适配无可用后端可上游。-export-dynamic→-rdynamic 为 clang/gcc 通用可移植写法(见 bugfixes)可单独提 PR。本仓无 fork remote。CLA 需签。"

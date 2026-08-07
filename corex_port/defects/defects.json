@@ -1,0 +1,34 @@
+{
+  "schema_version": "1.0",
+  "repo": "TornadoVM",
+  "target": "BI-V150",
+  "sdk_version": "CoreX 4.5.0.20260630",
+  "defects": [
+    {
+      "id": "nv-ptx-text-rejected",
+      "defect_key": "driver:nv-ptx-text-rejected",
+      "desc": "TornadoVM 的 CUDA/PTX 后端由 Graal 在 JVM 内把 Java 字节码即时编译成 NVIDIA PTX 文本，再经 JNI 调 cuModuleLoadData/cuModuleLoadDataEx 交给驱动 JIT；ivcore11 驱动对所有 NV PTX 文本一律返回 rc=200(CUDA_ERROR_INVALID_IMAGE)，导致每个下发 device kernel 的用例都无法加载 kernel 而失败。",
+      "suspected_component": "driver",
+      "component_detail": "cuModuleLoadData(Ex) 的 PTX 文本 ingestion：ivcore11 驱动只消费本机 native 镜像(clang/IXRTC 产出的 ELF cubin)，不接受 NVIDIA PTX ISA 文本",
+      "confidence": "high",
+      "symptom": "crash",
+      "affected_tests": [
+        "tornado-unittests PTX 后端全量：241 个运行时用例中 146 例失败，均首错于 cuModuleLoadDataEx -> Returned: 200 / 'PTX JIT compilation failed!'（TestHello/TestIntegers 等每个下发 device kernel 的类）；26 个通过者为不下发 device kernel 的 host/API/负例，69 例被框架标 Unsupported"
+      ],
+      "error": "cuModuleLoadDataEx -> Returned: 200 (CUDA_ERROR_INVALID_IMAGE); PTX JIT compilation failed!",
+      "root_cause_hypothesis": "ivcore11 设备代码路径是 clang -x ivcore 产出 ivcore11 native 镜像；驱动 JIT 不消费 NVIDIA PTX 文本(任意 .version/.target 均拒绝)。TornadoVM 的 CUDA 后端本质是 Graal→NV PTX→驱动 JIT，无法在不改 /usr/local/corex 且不新增一个产出 ivcore11 native 镜像的全新后端的前提下本地解决。疑似 SDK 未对『喂入 PTX 文本』开放 JIT，或应至少提供 PTX→native 的兼容层。",
+      "evidence": "零依赖裸驱动最小件(复用 ILGPU 规范件，见 defects/reproduce/nv-ptx-text-rejected/)：手写合法 NV 空 kernel PTX(.version 6.5 .target sm_70)经 cuModuleLoadDataEx 加载，实测 rc=200，已独立复现。对照本仓 corex_port/build/ptx_probe.cpp 对 30 组 (.version 5.0/6.0/6.5/7.0/7.5/8.0 × .target sm_35/50/60/70/75) 逐一加载全部 rc=200；而 nvrtc 不带 arch 编译产出的本地 ELF 镜像(魔数 'ELFB') cuModuleLoadData 成功 rc=0——证明驱动只消费本地镜像、不消费 NV PTX 文本。与 ILGPU 先例、iluvatar-cuda-base 索引『cuModuleLoad(NV PTX) 拒绝』一致。",
+      "reproduce": {
+        "path": "corex_port/defects/reproduce/nv-ptx-text-rejected/",
+        "standalone": true,
+        "build_cmd": "bash build.sh",
+        "run_cmd": "bash run.sh",
+        "expected": "cuModuleLoadDataEx rc=0，合法 NV PTX 空 kernel 应能 JIT 加载",
+        "actual": "cuModuleLoadDataEx rc=200 (CUDA_ERROR_INVALID_IMAGE)"
+      },
+      "blocker_ref": "ptx-text-rejected-by-driver",
+      "ref": "iluvatar-cuda-base: cuModuleLoad(NV PTX) 拒绝 / ivcore11 后端不消费 NV PTX 文本；规范复现件复用自 ILGPU driver:nv-ptx-text-rejected"
+    }
+  ],
+  "notes": "TornadoVM 仅一条 corex-issue 缺陷但影响面极大：驱动整体拒收 Graal 产出的 NV PTX 文本(rc=200)，146 个下发 device kernel 的用例全部失败。复现件复用 ILGPU 规范件(defect_key 一致)，本仓保留自包含拷贝。blocker opencl-backend-no-icd 虽亦为 corex-issue，但它是 PTX 终局后的备选后端可行性探针(系统无 Iluvatar OpenCL ICD)，不对应任何已执行的运行时失败用例(全部用例在 BACKEND=ptx 下跑)，故不升级为 defect，仍留 blockers.json。blocker driver-residue-init-hang 为 workaround/fixed(PTX 拒收级联的驱动残留，靠每类独立 JVM+复位缓解)，非独立 SDK 缺陷，不升级。"
+}
